@@ -67,6 +67,7 @@ const otherUnits = new Set(["cm", "centimeter", "centimeters", "centimetre", "ce
 const yes = new Set(["haan", "ha", "han", "हां", "हाँ", "yes", "ji haan", "जी हाँ", "जी हां", "haan ji", "han ji", "हाँ जी", "हां जी", "haan save kar do", "हाँ सेव कर दो", "yes save it"]);
 const no = new Set(["nahi", "nahin", "nai", "नहीं", "नही", "no", "cancel", "रद्द"]);
 const finish = new Set(["ho gaya", "hogaya", "हो गया", "done", "finish", "save", "सेव", "save fitting", "save kar do", "सेव कर दो", "ho gaya save kar do", "हो गया सेव कर दो"]);
+for (const phrase of ["save measurements", "save the measurements", "save the fitting", "save my measurements", "కొలతలు సేవ్ చేయండి", "కొలతలు సేవ్ చెయ్", "కొలతలు సేవ్ చేయి", "ఫిట్టింగ్ సేవ్ చేయండి", "नाप सेव करो", "फिटिंग सेव करो"]) finish.add(phrase);
 const saveConfirmation = /^(?:save|సేవ్|సేవు)\s+(?:chey+u*|cheyyandi|చెయ్|చేయ్|చెయ్యి|చేయి|చేయు|చెయ్యు|చేయండి|చెయ్యండి)$/iu;
 const finishAtEnd = /(?:^|[\s,;])(?:అయిపోయింది|పూర్తయింది|పూర్తి అయింది|ayipoyindi|हो गया|ho gaya|done)[.!?।\s]*$/iu;
 for (const word of ["అవును", "సరే", "సేవ్ చేయండి", "avunu", "sare"]) yes.add(word);
@@ -306,8 +307,9 @@ export function runTurn(fitting, transcript) {
   const words = tokenize(transcript);
   const command = words.join(" ");
   const pending = fitting.pending;
+  const wantsSave = finish.has(command) || saveConfirmation.test(command);
   const named = readCustomer(transcript.trim());
-  if (named || (pending?.type === "name" && !finish.has(command))) {
+  if (named || (pending?.type === "name" && !wantsSave)) {
     const name = (named?.name ?? transcript).trim().replace(/[.!?।]+$/u, "");
     if (!/^[\p{L}\p{M}][\p{L}\p{M}\s.'’-]{0,59}$/u.test(name) ||
         yes.has(command) || no.has(command) || splitMeasurements(tokenize(name)).chunks.length) {
@@ -323,7 +325,7 @@ export function runTurn(fitting, transcript) {
     return note(`Customer: ${name}`, `కస్టమర్ పేరు ${name}.`, `ग्राहक का नाम ${name}।`);
   }
   if (pending?.type === "save") {
-    if (yes.has(command) || saveConfirmation.test(command)) {
+    if (yes.has(command) || saveConfirmation.test(command) || (wantsSave && /^(?:save|సేవ్|కొలతలు|ఫిట్టింగ్|नाप|फिटिंग)(?: |$)/u.test(command))) {
       fitting.savedAt = new Date().toISOString();
       fitting.pending = null;
       return note("Fitting saved.", "కొలతలు సేవ్ అయ్యాయి.", "नाप सेव हो गए।");
@@ -334,27 +336,43 @@ export function runTurn(fitting, transcript) {
     }
   }
   if (pending?.type === "replace") {
+    if (wantsSave) {
+      pending.saveAfter = true;
+      const field = fieldById(pending.id);
+      const previous = fitting.values[pending.id];
+      return note(
+        `Before saving: change ${field.label.toLowerCase()} from ${previous} to ${pending.value} inches? Say yes or no.`,
+        `సేవ్ చేసే ముందు: ${field.speech} ${previous} నుంచి ${pending.value} అంగుళాలకు మార్చాలా? అవును లేదా కాదు అని చెప్పండి.`,
+        `सेव करने से पहले: ${field.hindi} ${previous} से ${pending.value} इंच कर दें? हाँ या नहीं कहें।`
+      );
+    }
     if (yes.has(command)) {
       const field = fieldById(pending.id);
       fitting.values[pending.id] = pending.value;
       fitting.pending = null;
-      return continueQueue(fitting, pending.next ?? [], note(
+      const reply = continueQueue(fitting, pending.next ?? [], note(
         `${field.label} updated to ${pending.value} in.`,
         `${field.speech} ఇప్పుడు ${pending.value} అంగుళాలు.`,
         `${field.hindi} अब ${pending.value} इंच है।`
       ));
+      if (pending.saveAfter && !fitting.pending) return requestNext(fitting);
+      if (pending.saveAfter && fitting.pending?.type === "replace") fitting.pending.saveAfter = true;
+      return reply;
     }
     if (no.has(command)) {
       fitting.pending = null;
-      return continueQueue(fitting, pending.next ?? [], note(
+      const reply = continueQueue(fitting, pending.next ?? [], note(
         "Previous measurement kept. Say the measurement again to make a different change.",
         "పాత కొలత అలాగే ఉంచాను. మార్చాలంటే మళ్ళీ చెప్పండి.",
         "पुराना नाप रखा है। बदलने के लिए फिर से बोलें।"
       ));
+      if (pending.saveAfter && !fitting.pending) return requestNext(fitting);
+      if (pending.saveAfter && fitting.pending?.type === "replace") fitting.pending.saveAfter = true;
+      return reply;
     }
     return pending.reply;
   }
-  if (finish.has(command)) return requestNext(fitting);
+  if (wantsSave) return requestNext(fitting);
   const markers = new RegExp(markerPattern, "giu");
   const marked = transcript.split(markers);
   const { chunks, lead } = marked.length === 1

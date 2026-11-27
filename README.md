@@ -14,7 +14,7 @@ docker compose up --build -d --wait
 
 Open **[http://localhost:8080](http://localhost:8080)** on the same computer. The home screen starts without any environment variables, API keys, Wispr Flow account, or database. You can paste or type the Telugu demo inputs below to test the whole fitting without installing Wispr Flow.
 
-Choose English, తెలుగు, or हिन्दी at the top of the app to switch its guide, measurement labels, and prompts. The app remembers your choice on that device and keeps the current fitting. For live dictation, install and sign in to Wispr Flow, then select the matching dictation language there. Place the cursor in the dictation field and use Flow's start/stop controls. After Flow inserts the finished transcript, the app processes it automatically. Spoken replies use a voice matching the selected app language when available and fall back to English if needed. Written replies are always displayed.
+Choose English, తెలుగు, or हिन्दी at the top of the app to switch its guide, measurement labels, and prompts. The app remembers your choice on that device and keeps the current fitting. For live dictation, install and sign in to Wispr Flow, then select the matching dictation language there. Place the cursor in the dictation field and use Flow's start/stop controls. After Flow inserts the finished transcript, the app processes it automatically. Spoken replies use a voice matching the selected app language when available and show a notice if Telugu playback is unavailable. Hindi can fall back to English. Written replies are always displayed.
 
 ### Open on a phone
 

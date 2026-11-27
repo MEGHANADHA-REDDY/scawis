@@ -42,6 +42,10 @@ function say(reply) {
   const voices = speechEngine.getVoices();
   const preferred = voices.find(voice => voice.lang.toLowerCase().split(/[-_]/)[0] === lang);
   function speakEnglish() {
+    if (lang === "te") {
+      byId("reply").textContent = replyText(reply) + " " + t("speechError");
+      return;
+    }
     const fallback = new SpeechSynthesisUtterance(reply.text);
     fallback.lang = "en-IN";
     const english = voices.find(voice => /^en-IN$/i.test(voice.lang))
