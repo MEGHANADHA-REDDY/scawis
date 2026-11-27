@@ -8,9 +8,9 @@ export const fields = [
 
 const english = "one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen".split(" ");
 const teluguFields = [
-  ["భుజం", "భుజము", "షోల్డర్", "షోల్డరు", "bhujam"],
-  ["ఛాతీ", "ఛాతి", "చాతి", "చెస్ట్", "బస్ట్", "chaati"],
-  ["నడుము", "వెయిస్ట్", "వైస్ట్", "nadumu"],
+  ["భుజం", "భుజము", "భుజాల వెడల్పు", "షోల్డర్", "షోల్డరు", "షోల్డర్స్", "bhujam"],
+  ["ఛాతీ", "ఛాతి", "చాతి", "చాతీ", "చెస్ట్", "బస్ట్", "chaati"],
+  ["నడుము", "వెయిస్ట్", "వైస్ట్", "వేస్ట్", "nadumu"],
   ["చేతి పొడవు", "చేయి పొడవు", "స్లీవ్ పొడవు", "స్లీవ్", "sleeve podavu"],
   ["బ్లౌజ్ పొడవు", "బ్లౌజు పొడవు", "జాకెట్ పొడవు", "బ్లౌజ్ లెంగ్త్", "blouse podavu"]
 ];
@@ -44,6 +44,8 @@ teluguNumbers.forEach((word, index) => numbers.set(word, index + 1));
 for (const [word, value] of [
   ["పధ్నాలుగు", 14], ["పదనాలుగు", 14], ["పద్దెనిమిది", 18], ["తొమ్మిదిన్నర", 9.5],
   ["పద్నాలుగున్నర", 14.5], ["పధ్నాలుగున్నర", 14.5], ["పదిన్నర", 10.5],
+  ["పదైదు", 15], ["పదియైదు", 15], ["పదారు", 16], ["ముప్పయి", 30],
+  ["ముప్పయారు", 36], ["ముప్పయ్యారు", 36],
   ["తొమ్మిదీ", 9], ["పద్నాలుగూ", 14], ["పద్నాలుగునర", 14.5]
 ]) numbers.set(word, value);
 english.forEach((word, index) => numbers.set(word, index + 1));
@@ -70,6 +72,7 @@ for (const word of ["సెం", "సెమీ", "సెంటీమీటర్
 
 function normalize(text) {
   return text.normalize("NFC").toLowerCase()
+    .replace(/([\p{L}\p{M}])(?:అంగుళాలు|ఇంచులు)(?=$|[^\p{L}\p{M}])/gu, "$1 ")
     .replace(/[౦-౯]/gu, char => String(char.codePointAt(0) - 0xC66))
     .replace(/[०-९]/gu, char => String(char.codePointAt(0) - 0x966))
     .replace(/([\p{L}\p{M}])-(?=[\p{L}\p{M}])/gu, "$1 ")
@@ -92,7 +95,7 @@ function readWhole(words, index) {
   const base = numbers.get(word);
   const ones = english.indexOf(words[index + 1]) + 1;
   const teluguOnes = teluguNumbers.indexOf(words[index + 1]) + 1;
-  const suffix = tens.has(word) ? ones : ["ఇరవై", "ముప్పై", "నలభై", "యాభై"].includes(word) ? teluguOnes : 0;
+  const suffix = tens.has(word) ? ones : ["ఇరవై", "ముప్పై", "ముప్పయి", "నలభై", "యాభై"].includes(word) ? teluguOnes : 0;
   if (suffix > 0 && suffix < 10) {
     return { value: base + suffix, end: index + 2 };
   }
@@ -197,7 +200,7 @@ function askAboutValues(field, values, wrongUnit) {
       `${field.speech}: ${values.join(" లేదా ")} అంగుళాలా?`
     );
   }
-  return note(`What is the ${field.label.toLowerCase()} measurement in inches?`, askValue(field));
+  return note(`Please repeat the ${field.label.toLowerCase()} measurement in inches.`, `${field.speech} కొలత అంగుళాల్లో మళ్ళీ చెప్పండి.`);
 }
 
 function applyMeasurements(fitting, entries) {

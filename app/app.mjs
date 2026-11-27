@@ -27,11 +27,31 @@ function say(reply) {
   byId("reply").textContent = reply.text + (storageAvailable ? "" : " Device storage is unavailable.");
   if (!state.sound || !speechEngine) return;
   speechEngine.cancel();
+  const voices = speechEngine.getVoices();
+  const telugu = voices.find(voice => /^te(?:-|_|$)/i.test(voice.lang));
+  function speakEnglish() {
+    const fallback = new SpeechSynthesisUtterance(reply.text);
+    fallback.lang = "en-IN";
+    const english = voices.find(voice => /^en-IN$/i.test(voice.lang))
+      ?? voices.find(voice => /^en(?:-|_|$)/i.test(voice.lang));
+    if (english) fallback.voice = english;
+    fallback.onerror = event => {
+      if (event.error !== "canceled" && event.error !== "interrupted") {
+        byId("reply").textContent = reply.text + " Spoken reply unavailable on this device.";
+      }
+    };
+    speechEngine.speak(fallback);
+  }
+  if (!telugu) {
+    speakEnglish();
+    return;
+  }
   const utterance = new SpeechSynthesisUtterance(reply.speech);
   utterance.lang = "te-IN";
-  const telugu = speechEngine.getVoices().find(voice => voice.lang.toLowerCase().startsWith("te"));
-  if (!telugu) return;
   utterance.voice = telugu;
+  utterance.onerror = event => {
+    if (event.error !== "canceled" && event.error !== "interrupted") speakEnglish();
+  };
   speechEngine.speak(utterance);
 }
 

@@ -14,7 +14,7 @@ docker compose up --build -d --wait
 
 Open **[http://localhost:8080](http://localhost:8080)** on the same computer. The home screen starts without any environment variables, API keys, Wispr Flow account, or database. You can paste or type the Telugu demo inputs below to test the whole fitting without installing Wispr Flow.
 
-For live dictation, install and sign in to Wispr Flow on the device being used, then select Telugu in its language settings. Place the cursor in the dictation field and use Flow's start/stop controls. After Flow inserts the finished transcript, the app processes it automatically. Spoken replies require a Telugu voice exposed by the device's browser. Written replies are always displayed.
+For live dictation, install and sign in to Wispr Flow on the device being used, then select Telugu in its language settings. Place the cursor in the dictation field and use Flow's start/stop controls. After Flow inserts the finished transcript, the app processes it automatically. Spoken replies use a Telugu voice when available and fall back to English when the browser has no Telugu voice. Written replies are always displayed.
 
 ### Open on a phone
 
@@ -42,7 +42,7 @@ Docker builds an Nginx image containing the static app. Browser JavaScript parse
 - **Page unavailable:** Run `docker compose ps` and `docker compose logs app`. Confirm the container is running and open the URL on the machine running Docker.
 - **Port 8080 is in use:** Change `"8080:80"` in `docker-compose.yml` to `"8081:80"`, rebuild, and open `http://localhost:8081`.
 - **Changed code isn't showing:** Run `docker compose up --build -d --wait` again and refresh the page.
-- **No spoken reply:** Check that **Sound on** is enabled and the browser has access to a Telugu voice. You can still follow the reply on screen.
+- **No spoken reply:** Check that **Sound on** is enabled and the browser has access to a speech voice. You can still follow the reply on screen.
 - **Stop the app:** Run `docker compose down`.
 
 ## Push this source
