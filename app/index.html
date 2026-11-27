@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#172c26">
+<title>Bolkar Fit · Blouse fittings</title>
+<link rel="stylesheet" href="./style.css">
+<script type="module" src="./app.mjs"></script>
+</head>
+<body>
+<header><div class="wrap masthead"><div><strong>Bolkar Fit</strong><span>Fitting notebook</span></div><button id="sound" type="button" aria-pressed="true">Sound on</button></div></header>
+<main class="wrap">
+<section class="intro"><div><p class="eyebrow">TAILOR'S WORKSHOP</p><h1>Blouse fitting</h1><p>Speak the measurements as you take them.</p></div><button type="button" id="new">New fitting</button></section>
+<div class="workspace">
+<section class="panel voice" aria-labelledby="voice-title">
+<h2 id="voice-title">Voice entry</h2>
+<p>Start Wispr Flow with this field focused. Your dictation is processed automatically.</p>
+<form id="form">
+<label for="transcript">Dictation</label>
+<input id="transcript" type="text" autocomplete="off" placeholder="భుజం పద్నాలుగున్నర, నడుము ముప్పై">
+<button id="process" class="primary">Process dictation</button>
+</form>
+<button id="save" type="button" hidden>Save fitting</button>
+<div class="reply"><strong>Fitting assistant</strong><p id="reply" role="status" aria-live="polite">Start a fitting to take measurements.</p></div>
+<div class="examples"><strong>Try saying</strong><p>“కస్టమర్ పేరు అనిత”<br>“కొలత రాయి భుజం పద్నాలుగున్నర”<br>“అయిపోయింది”</p></div>
+</section>
+<section class="panel card" aria-labelledby="card-title">
+<div class="cardhead"><h2 id="card-title">Measurement card</h2><span id="badge">No fitting</span></div>
+<p id="customer" lang="te"></p><p id="progress">0 of 5 measurements</p>
+<progress id="meter" max="5" value="0" aria-label="Measurements recorded"></progress>
+<dl id="measurements"></dl>
+</section>
+</div>
+<section class="panel history" aria-labelledby="history-title"><h2 id="history-title">Saved fittings</h2><div id="history"></div></section>
+</main>
+</body>
+</html>
