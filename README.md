@@ -1,10 +1,10 @@
 # Bolkar Fit
 
-Bolkar Fit is a Telugu-first fitting notebook for independent tailors. Dictate blouse measurements with Wispr Flow, review the measurement card, correct values by voice, and save the fitting under the customer's name.
+A voice-first blouse fitting notebook for independent tailors. Speak the customer’s name and measurements in **Telugu, Hindi, or English**, review the read-back, correct a value, and save the fitting. Wispr Flow provides dictation.
 
-## Run from GitHub
+## Judges — start here
 
-**Prerequisites:** Git and Docker with Docker Compose v2. On Windows or macOS, start Docker Desktop before running the commands. On Linux, start Docker Engine and make sure the Compose plugin is installed. An internet connection is needed on the first run to download the base image and the two Piper voice models.
+Clone this public repository and run the following from the **repository root**. Start Docker Desktop or Docker Engine first. Docker Compose v2 is required.
 
 ```sh
 git clone https://github.com/MEGHANADHA-REDDY/scawis.git
@@ -12,35 +12,64 @@ cd scawis
 docker compose up --build -d --wait
 ```
 
-Open **[http://localhost:8080](http://localhost:8080)** on the same computer. The home screen starts without any environment variables, API keys, Wispr Flow account, or database. You can paste or type the Telugu demo inputs below to test the whole fitting without installing Wispr Flow.
+**Open [http://localhost:8080](http://localhost:8080/) on the machine running Docker.** Compose publishes **port 8080** with the mapping `8080:8080`. The page should show the **Bolkar Fit** fitting screen and language switch.
 
-Choose English, తెలుగు, or हिन्दी at the top of the app to switch its guide, measurement labels, and prompts. The app remembers your choice on that device and keeps the current fitting. For live dictation, install and sign in to Wispr Flow, then select the matching dictation language there. Place the cursor in the dictation field and use Flow's start/stop controls. After Flow inserts the finished transcript, the app processes it automatically. The Docker build downloads the Maya (Telugu) and Pratham (Hindi) Piper neural voices. A local service generates the spoken replies. No response text is sent to an external speech provider. No installed voice or external speech API is needed. English uses the browser voice. Tap New fitting or Hear reply to enable playback in browsers that require a tap. Use the Docker site or local HTTP preview to hear the Piper voices. Written replies are always displayed.
+- **No API keys, secrets, environment variables, or `.env` file are required.** There is no `.env.example` because the app requires no environment setup.
+- The first build needs internet access to download the base image, dependencies, and two public Piper voice models.
+- **Wispr Flow is optional for evaluating the build.** Paste the sample turns below to verify the entire fitting. Install and sign in to Wispr Flow for live dictation.
+- Run `docker compose ps` to confirm the `app` service is **healthy** and publishes `8080->8080/tcp`. Run `docker compose down` to stop it.
 
-### Open on a phone
+## Verify a complete fitting
 
-Keep the computer and phone on the same Wi-Fi. On Windows, run `ipconfig` and look for the active Wi-Fi adapter's IPv4 address. On macOS or Linux, find the active adapter's address in network settings. On the phone, open `http://<computer-ip>:8080`, replacing the placeholder with the address, for example `http://192.168.1.42:8080`. Keep the container running and use a trusted network. If it works on the computer but not on the phone, check the computer's firewall and whether the Wi-Fi isolates devices.
+Select **తెలుగు**, turn sound on, and start a new fitting. Paste each line below **one at a time** and wait for the app's response. The text processes automatically.
 
-The GitHub repository URL opens the source code. The localhost URL opens the app on your own computer after Compose starts. A public browser demo requires separate hosting.
+| Turn | Sample input | Expected result |
+| --- | --- | --- |
+| 1 | కస్టమర్ పేరు అనిత | The card shows the customer name, Anita. |
+| 2 | భుజం పదహారు, ఛాతీ ముప్పై ఆరు, నడుము ముప్పై, చేతి పొడవు పది, బ్లౌజ్ పొడవు పదిహేను | The card shows **16, 36, 30, 10, 15 inches** and the app reads back the values in Telugu. |
+| 3 | చేతి పొడవు తొమ్మిదిన్నర | The app asks whether to change the sleeve from 10 to 9.5 inches. |
+| 4 | అవును | Sleeve changes to **9.5 inches**. |
+| 5 | అయిపోయింది | The app asks whether to save Anita's fitting. |
+| 6 | అవును | The card appears under saved fittings. Refresh the same page to verify it persists. |
 
-## Demo a Telugu fitting
+Use **Hear reply** (జవాబు వినండి) to replay the latest prompt. The in-app guide includes matching samples for English and Hindi.
 
-You can say the name in its own turn or begin the measurement turn with it. For example, “Customer peru Ani. భుజం పద్నాలుగున్నర, నడుము ముప్పై.” Use separate turns for the save prompt and confirmation. With pasted text, wait briefly after each paste for automatic processing.
+## Use Wispr Flow
 
-1. Click **New fitting** and say **కస్టమర్ పేరు అనిత**.
-2. Say all five in one turn: **భుజం పద్నాలుగున్నర అంగుళాలు, ఛాతీ ముప్పై ఆరు అంగుళాలు, నడుము ముప్పై అంగుళాలు, చేతి పొడవు తొమ్మిదిన్నర అంగుళాలు, బ్లౌజ్ పొడవు పద్నాలుగు అంగుళాలు**. The card should show 14.5, 36, 30, 9.5, and 14 inches.
-3. Say **చేతి పొడవు పది అంగుళాలు**. When asked to confirm the change, say **అవును**. The sleeve should change to 10 inches.
-4. Say **అయిపోయింది**. When asked to save Anita's fitting, say **అవును**. The card appears under **Saved fittings**. Refresh to check that it persists.
+Choose the same language in Bolkar Fit and in **Wispr Flow’s language settings**. Start a fitting, focus the dictation field, and use Flow’s own start and stop controls. When you stop, Flow inserts the transcript and the app processes it automatically.
 
-For a fitting with conversation in between, say **కొలత రాయి** before each measurement and pause briefly afterward. Try **కొలత రాయి భుజం పద్నాలుగున్నర. కాస్త నిటారుగా నిలబడండి. కొలత రాయి నడుము ముప్పై.** The app reads the first clause after each marker. Check the card before saving.
+If the tailor is speaking to the customer between measurements, prefix each measurement with **“Note this,” “కొలత రాయి,” or “नोट करो”** and pause briefly afterward. The app uses the first clause after each marker. Review the read-back before saving.
 
-## Architecture and storage
+## Open on a phone
 
-Docker runs a small Python server for the static app and local audio synthesis. Browser JavaScript parses the transcript and manages the fitting. Wispr Flow supplies speech-to-text. The app uses the browser voice for English and [Piper](https://github.com/OHF-Voice/piper1-gpl) for Telugu and Hindi read-back using [Maya](https://huggingface.co/rhasspy/piper-voices/tree/main/te/te_IN/maya/medium) and [Pratham](https://huggingface.co/rhasspy/piper-voices/tree/main/hi/hi_IN/pratham/medium). The fitting records are stored in the browser on the current device and site address. Opening the app on another device or port uses separate browser storage.
+Connect the phone and the Docker computer to the same trusted Wi-Fi. Find the computer’s Wi-Fi IPv4 address using `ipconfig` on Windows or network settings on macOS/Linux. Open `http://<computer-ip>:8080` on the phone, for example `http://192.168.1.42:8080`. Keep Docker running. If it works on the computer but not the phone, check the host firewall and whether the Wi-Fi blocks connections between devices.
+
+The GitHub URL is for source code. The app URL is available on the machine running it, or over the local network as described above.
+
+## Run locally without Docker
+
+From the repository root on Windows, with Python installed:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install piper-tts==1.4.1
+New-Item -ItemType Directory -Force voices | Out-Null
+.\.venv\Scripts\python.exe -m piper.download_voices --download-dir voices te_IN-maya-medium hi_IN-pratham-medium
+.\.venv\Scripts\python.exe server.py
+```
+
+Keep PowerShell open and visit [http://127.0.0.1:8080](http://127.0.0.1:8080/). Press **Ctrl+C** to stop. The environment and model setup is one-time.
+
+## Dependencies and storage
+
+- Wispr Flow provides speech-to-text. Browser JavaScript interprets the transcript and manages the fitting.
+- The Python server serves the app and uses [Piper](https://github.com/OHF-Voice/piper1-gpl) for local neural read-back in Telugu ([Maya](https://huggingface.co/rhasspy/piper-voices/tree/main/te/te_IN/maya/medium)) and Hindi ([Pratham](https://huggingface.co/rhasspy/piper-voices/tree/main/hi/hi_IN/pratham/medium)). English playback uses the browser’s voice. Written replies remain available if audio fails.
+- Fittings stay in browser storage on the current device and site address. Different addresses or ports have separate storage.
 
 ## Troubleshooting
 
-- **Page unavailable:** Run `docker compose ps` and `docker compose logs app`. Confirm the container is running and open the URL on the machine running Docker.
-- **Port 8080 is in use:** Change `"8080:8080"` in `docker-compose.yml` to `"8081:8080"`, rebuild, and open `http://localhost:8081`.
-- **Changed code isn't showing:** Run `docker compose up --build -d --wait` again and refresh the page.
-- **No spoken reply:** Check that **Sound on** is enabled and tap **Hear reply**. English uses an installed browser voice. You can still follow the reply on screen.
-- **Stop the app:** Run `docker compose down`.
+- **“No configuration file provided”** — change into the cloned `scawis` directory before running Compose.
+- **Docker API or daemon error** — start Docker Desktop or Docker Engine and retry.
+- **Port 8080 is in use** — stop the other local preview, then rerun Compose. For personal testing, you can change the mapping to `8081:8080` and open `http://localhost:8081`.
+- **Page unavailable** — run `docker compose ps` and `docker compose logs app` from the repo root.
+- **Silent reply** — turn sound on and tap **Hear reply**. Browsers can require a tap before allowing playback.
