@@ -6,7 +6,7 @@ const key = "bolkar-fit-v1";
 const byId = id => document.getElementById(id);
 const input = byId("transcript");
 const speechEngine = globalThis.speechSynthesis;
-const hasOfflineVoice = Boolean(globalThis.AudioContext && globalThis.Worker && location.protocol !== "file:");
+const hasOfflineVoice = Boolean(globalThis.AudioContext && location.protocol !== "file:");
 const canSpeak = Boolean(speechEngine || hasOfflineVoice);
 let autoSubmitTimer;
 let lastReply;

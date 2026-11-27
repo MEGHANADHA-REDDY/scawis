@@ -4,7 +4,7 @@ Bolkar Fit is a Telugu-first fitting notebook for independent tailors. Dictate b
 
 ## Run from GitHub
 
-**Prerequisites:** Git and Docker with Docker Compose v2. On Windows or macOS, start Docker Desktop before running the commands. On Linux, start Docker Engine and make sure the Compose plugin is installed. An internet connection is needed on the first run to download the Nginx base image.
+**Prerequisites:** Git and Docker with Docker Compose v2. On Windows or macOS, start Docker Desktop before running the commands. On Linux, start Docker Engine and make sure the Compose plugin is installed. An internet connection is needed on the first run to download the base image and the two Piper voice models.
 
 ```sh
 git clone https://github.com/MEGHANADHA-REDDY/scawis.git
@@ -14,7 +14,7 @@ docker compose up --build -d --wait
 
 Open **[http://localhost:8080](http://localhost:8080)** on the same computer. The home screen starts without any environment variables, API keys, Wispr Flow account, or database. You can paste or type the Telugu demo inputs below to test the whole fitting without installing Wispr Flow.
 
-Choose English, తెలుగు, or हिन्दी at the top of the app to switch its guide, measurement labels, and prompts. The app remembers your choice on that device and keeps the current fitting. For live dictation, install and sign in to Wispr Flow, then select the matching dictation language there. Place the cursor in the dictation field and use Flow's start/stop controls. After Flow inserts the finished transcript, the app processes it automatically. The Docker build bundles eSpeak NG to generate Telugu and Hindi replies locally in a browser worker. No installed voice or external speech API is needed. English uses the browser voice. Tap New fitting or Hear reply to enable playback in browsers that require a tap. Use the Docker site or local HTTP preview for the bundled voices. Written replies are always displayed.
+Choose English, తెలుగు, or हिन्दी at the top of the app to switch its guide, measurement labels, and prompts. The app remembers your choice on that device and keeps the current fitting. For live dictation, install and sign in to Wispr Flow, then select the matching dictation language there. Place the cursor in the dictation field and use Flow's start/stop controls. After Flow inserts the finished transcript, the app processes it automatically. The Docker build downloads the Maya (Telugu) and Pratham (Hindi) Piper neural voices. A local service generates the spoken replies. No response text is sent to an external speech provider. No installed voice or external speech API is needed. English uses the browser voice. Tap New fitting or Hear reply to enable playback in browsers that require a tap. Use the Docker site or local HTTP preview to hear the Piper voices. Written replies are always displayed.
 
 ### Open on a phone
 
@@ -35,19 +35,19 @@ For a fitting with conversation in between, say **కొలత రాయి** be
 
 ## Architecture and storage
 
-Docker builds an Nginx image containing the static app. Browser JavaScript parses the transcript and manages the fitting. Wispr Flow supplies speech-to-text. The app uses the browser voice for English and eSpeak NG (GPL-3.0-or-later, https://github.com/ianmarmour/espeak-ng.js) for local Telugu and Hindi read-back. The fitting records are stored in the browser on the current device and site address. Opening the app on another device or port uses separate browser storage.
+Docker runs a small Python server for the static app and local audio synthesis. Browser JavaScript parses the transcript and manages the fitting. Wispr Flow supplies speech-to-text. The app uses the browser voice for English and [Piper](https://github.com/OHF-Voice/piper1-gpl) for Telugu and Hindi read-back using [Maya](https://huggingface.co/rhasspy/piper-voices/tree/main/te/te_IN/maya/medium) and [Pratham](https://huggingface.co/rhasspy/piper-voices/tree/main/hi/hi_IN/pratham/medium). The fitting records are stored in the browser on the current device and site address. Opening the app on another device or port uses separate browser storage.
 
 ## Troubleshooting
 
 - **Page unavailable:** Run `docker compose ps` and `docker compose logs app`. Confirm the container is running and open the URL on the machine running Docker.
-- **Port 8080 is in use:** Change `"8080:80"` in `docker-compose.yml` to `"8081:80"`, rebuild, and open `http://localhost:8081`.
+- **Port 8080 is in use:** Change `"8080:8080"` in `docker-compose.yml` to `"8081:8080"`, rebuild, and open `http://localhost:8081`.
 - **Changed code isn't showing:** Run `docker compose up --build -d --wait` again and refresh the page.
-- **No spoken reply:** Check that **Sound on** is enabled and the browser has access to a speech voice. You can still follow the reply on screen.
+- **No spoken reply:** Check that **Sound on** is enabled and tap **Hear reply**. English uses an installed browser voice. You can still follow the reply on screen.
 - **Stop the app:** Run `docker compose down`.
 
 ## Push this source
 
-Clone the target repository first so you preserve any existing history. Copy the contents of the supplied source folder into the clone, including `.gitignore` and `.dockerignore`. The repo root should contain `docker-compose.yml`, `Dockerfile`, `nginx.conf`, `README.md`, and `app/`.
+Clone the target repository first so you preserve any existing history. Copy the contents of the supplied source folder into the clone, including `.gitignore` and `.dockerignore`. The repo root should contain `docker-compose.yml`, `Dockerfile`, `server.py`, `README.md`, and `app/`.
 
 ```sh
 git status

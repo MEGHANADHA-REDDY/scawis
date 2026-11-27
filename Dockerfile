@@ -1,10 +1,10 @@
-FROM node:22-alpine AS voices
-WORKDIR /build
-RUN npm pack espeak-ng@1.0.2 --silent \
-    && tar -xzf espeak-ng-1.0.2.tgz \
-    && cp package/LICENSE package/dist/LICENSE
-
-FROM nginx:alpine
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-COPY app/ /usr/share/nginx/html/
-COPY --from=voices /build/package/dist/ /usr/share/nginx/html/voice-engine/
+FROM python:3.12-slim
+WORKDIR /opt/bolkar
+RUN pip install --no-cache-dir piper-tts==1.4.1 \
+    && mkdir -p voices \
+    && (python -m piper.download_voices --download-dir voices te_IN-maya-medium hi_IN-pratham-medium \
+        || python -m piper.download_voices --download-dir voices te_IN-maya-medium hi_IN-pratham-medium)
+COPY app/ ./app/
+COPY server.py .
+EXPOSE 8080
+CMD ["python", "server.py", "--host", "0.0.0.0"]

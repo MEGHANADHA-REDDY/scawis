@@ -1,7 +1,6 @@
 let context;
-let worker;
 let current;
-let sequence = 0;
+let request;
 
 export function primePlayback() {
   if (!globalThis.AudioContext) return;
@@ -10,48 +9,43 @@ export function primePlayback() {
 }
 
 export function cancelPlayback() {
-  sequence += 1;
+  request?.abort();
+  request = undefined;
   current?.stop();
   current = undefined;
 }
 
 export async function speakOffline(language, text, onError) {
   cancelPlayback();
-  const id = sequence;
   if (!context) {
     onError();
     return;
   }
+  const controller = new AbortController();
+  request = controller;
   try {
     if (context.state === "suspended") await context.resume();
-    if (id !== sequence) return;
-    worker ??= new Worker(new URL("./voice-worker.mjs", import.meta.url), { type: "module" });
-    worker.onerror = () => {
-      worker.terminate();
-      worker = undefined;
-      if (id === sequence) onError();
+    const response = await fetch("/api/speech", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ language, text }),
+      signal: controller.signal
+    });
+    if (!response.ok) throw new Error("Speech service unavailable");
+    const buffer = await context.decodeAudioData(await response.arrayBuffer());
+    if (controller.signal.aborted) return;
+    const source = context.createBufferSource();
+    source.buffer = buffer;
+    source.connect(context.destination);
+    source.onended = () => {
+      if (current === source) current = undefined;
+      source.disconnect();
     };
-    worker.onmessage = async ({ data }) => {
-      if (id !== sequence || data.id !== id) return;
-      try {
-        if (data.error) throw new Error("Speech synthesis failed");
-        const buffer = await context.decodeAudioData(data.audio);
-        if (id !== sequence) return;
-        const source = context.createBufferSource();
-        source.buffer = buffer;
-        source.connect(context.destination);
-        source.onended = () => {
-          if (current === source) current = undefined;
-          source.disconnect();
-        };
-        source.start();
-        current = source;
-      } catch {
-        if (id === sequence) onError();
-      }
-    };
-    worker.postMessage({ id, language, text });
+    source.start();
+    current = source;
   } catch {
-    onError();
+    if (!controller.signal.aborted) onError();
+  } finally {
+    if (request === controller) request = undefined;
   }
 }
