@@ -21,18 +21,18 @@ docker compose up --build -d --wait
 
 ## Verify a complete fitting
 
-Select **తెలుగు**, turn sound on, and start a new fitting. Dictate each line below **one at a time** with Wispr Flow. Stop dictation after each turn and wait for the app’s response.
+**For a quick review, select English** in both Bolkar Fit and Wispr Flow. If you prefer Telugu or Hindi, select that language in both apps and use the matching column below. With sound on, start a new fitting. Dictate one row at a time, stop Wispr Flow, and wait for the app’s reply.
 
-| Turn | Sample input | Expected result |
-| --- | --- | --- |
-| 1 | కస్టమర్ పేరు అనిత | The card shows the customer name, Anita. |
-| 2 | భుజం పదహారు, ఛాతీ ముప్పై ఆరు, నడుము ముప్పై, చేతి పొడవు పది, బ్లౌజ్ పొడవు పదిహేను | The card shows **16, 36, 30, 10, 15 inches** and the app reads back the values in Telugu. |
-| 3 | చేతి పొడవు తొమ్మిదిన్నర | The app asks whether to change the sleeve from 10 to 9.5 inches. |
-| 4 | అవును | Sleeve changes to **9.5 inches**. |
-| 5 | అయిపోయింది | The app asks whether to save Anita's fitting. |
-| 6 | అవును | The card appears under saved fittings. Refresh the same page to verify it persists. |
+| Step | English | తెలుగు | हिन्दी | What to check |
+| --- | --- | --- | --- | --- |
+| 1 | Customer name Anita. | కస్టమర్ పేరు అనిత. | ग्राहक का नाम अनीता। | The customer name appears on the card. |
+| 2 | Shoulder sixteen, bust thirty-six, waist thirty, sleeve ten, blouse length fifteen. | భుజం పదహారు, ఛాతీ ముప్పై ఆరు, నడుము ముప్పై, చేతి పొడవు పది, బ్లౌజ్ పొడవు పదిహేను. | कंधा सोलह, छाती छत्तीस, कमर तीस, बाजू की लंबाई दस, ब्लाउज़ की लंबाई पंद्रह। | The card shows **16, 36, 30, 10, 15 inches**. The app reads back the values in the selected language. |
+| 3 | Sleeve nine and a half. | చేతి పొడవు తొమ్మిదిన్నర. | बाजू की लंबाई साढ़े नौ। | The app asks whether to change the sleeve from 10 to 9.5 inches. |
+| 4 | Yes. | అవును. | हाँ। | Sleeve changes to **9.5 inches**. |
+| 5 | Done. | అయిపోయింది. | हो गया। | The app asks whether to save the named fitting. |
+| 6 | Yes. | అవును. | हाँ। | The card appears under saved fittings. Refresh the same page to check that it persists. |
 
-Use **Hear reply** (జవాబు వినండి) to replay the latest prompt. The in-app guide includes matching samples for English and Hindi.
+Use **Hear reply**, **జవాబు వినండి**, or **जवाब सुनें** to replay the latest prompt.
 
 ## Use Wispr Flow
 
