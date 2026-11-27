@@ -16,12 +16,12 @@ docker compose up --build -d --wait
 
 - **No API keys, secrets, environment variables, or `.env` file are required.** There is no `.env.example` because the app requires no environment setup.
 - The first build needs internet access to download the base image, dependencies, and two public Piper voice models.
-- **Wispr Flow is optional for evaluating the build.** Paste the sample turns below to verify the entire fitting. Install and sign in to Wispr Flow for live dictation.
+- **Use Wispr Flow for the voice demo.** Install and sign in to Flow, then follow the sample fitting below. Flow transcribes each spoken turn and Bolkar Fit processes it automatically.
 - Run `docker compose ps` to confirm the `app` service is **healthy** and publishes `8080->8080/tcp`. Run `docker compose down` to stop it.
 
 ## Verify a complete fitting
 
-Select **తెలుగు**, turn sound on, and start a new fitting. Paste each line below **one at a time** and wait for the app's response. The text processes automatically.
+Select **తెలుగు**, turn sound on, and start a new fitting. Dictate each line below **one at a time** with Wispr Flow. Stop dictation after each turn and wait for the app’s response.
 
 | Turn | Sample input | Expected result |
 | --- | --- | --- |
@@ -72,4 +72,5 @@ Keep PowerShell open and visit [http://127.0.0.1:8080](http://127.0.0.1:8080/). 
 - **Docker API or daemon error** — start Docker Desktop or Docker Engine and retry.
 - **Port 8080 is in use** — stop the other local preview, then rerun Compose. For personal testing, you can change the mapping to `8081:8080` and open `http://localhost:8081`.
 - **Page unavailable** — run `docker compose ps` and `docker compose logs app` from the repo root.
+- **Checking transcript handling** — if you are troubleshooting a dictation issue, paste the exact transcript into the dictation field and compare the result.
 - **Silent reply** — turn sound on and tap **Hear reply**. Browsers can require a tap before allowing playback.
