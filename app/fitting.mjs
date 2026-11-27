@@ -255,6 +255,30 @@ function continueQueue(fitting, next, reply) {
   return combine(reply, fitting.pending);
 }
 
+const namePrefix = /^(?:(?:కస్టమర్|customer|kastamar)\s+)?(?:పేరు|name|peru|peeru)(?:\s*[:：,]\s*|\s+)(?:(?:is|అంటే)\s+)?/iu;
+const markerPattern = "కొలత రాయండి|కొలత రాయి|note karo|kolata rayi";
+
+function readCustomer(transcript) {
+  const prefix = transcript.match(namePrefix);
+  if (!prefix) return null;
+  const content = transcript.slice(prefix[0].length);
+  const punctuation = content.search(/[.!?。\n](?!\p{Nd})/u);
+  const marker = content.search(new RegExp(markerPattern, "iu"));
+  const tokens = [...content.matchAll(/[\p{L}\p{M}]+/gu)];
+  const measurement = tokens.findIndex((_, index) => index > 0 && aliases.some(alias =>
+    alias.words.every((word, offset) => normalize(tokens[index + offset]?.[0] ?? "") === word)
+  ));
+  const splitAt = Math.min(
+    punctuation < 0 ? content.length : punctuation,
+    marker < 0 ? content.length : marker,
+    measurement < 0 ? content.length : tokens[measurement].index
+  );
+  return {
+    name: content.slice(0, splitAt).trim().replace(/[,:;]+$/u, "").trim(),
+    rest: content.slice(splitAt).replace(/^[\s,.!?。;:]+/u, "")
+  };
+}
+
 export function runTurn(fitting, transcript) {
   if (!fitting || fitting.savedAt) {
     return note("Start a new fitting first.", "ముందుగా కొత్త ఫిట్టింగ్ మొదలుపెట్టండి.");
@@ -262,14 +286,19 @@ export function runTurn(fitting, transcript) {
   const words = tokenize(transcript);
   const command = words.join(" ");
   const pending = fitting.pending;
-  const named = transcript.match(/^(?:కస్టమర్ పేరు|పేరు|customer name|peru)\s*[:：]?\s+([^.!?\n]+)[.!?]?$/iu);
+  const named = readCustomer(transcript.trim());
   if (named || (pending?.type === "name" && !finish.has(command))) {
-    const name = (named?.[1] ?? transcript).trim().replace(/[.!?]+$/u, "");
+    const name = (named?.name ?? transcript).trim().replace(/[.!?]+$/u, "");
     if (!/^[\p{L}\p{M}][\p{L}\p{M}\s.'’-]{0,59}$/u.test(name) ||
         yes.has(command) || no.has(command) || splitMeasurements(tokenize(name)).chunks.length) {
       return note("Please say just the customer's name.", "కస్టమర్ పేరు మాత్రమే చెప్పండి.");
     }
     fitting.customer = name;
+    if (named?.rest) {
+      if (pending?.type === "name") fitting.pending = null;
+      const reply = runTurn(fitting, named.rest);
+      return note(`Customer: ${name}. ${reply.text}`, `కస్టమర్ పేరు ${name}. ${reply.speech}`);
+    }
     if (pending?.type === "name") return requestNext(fitting);
     return note(`Customer: ${name}`, `కస్టమర్ పేరు ${name}.`);
   }
@@ -304,7 +333,7 @@ export function runTurn(fitting, transcript) {
     return pending.reply;
   }
   if (finish.has(command)) return requestNext(fitting);
-  const markers = /(?:కొలత రాయి|కొలత రాయండి|note karo|kolata rayi)/giu;
+  const markers = new RegExp(markerPattern, "giu");
   const marked = transcript.split(markers);
   const { chunks, lead } = marked.length === 1
     ? splitMeasurements(words)

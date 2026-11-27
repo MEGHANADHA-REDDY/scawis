@@ -24,7 +24,7 @@ The GitHub repository URL opens the source code. The localhost URL opens the app
 
 ## Demo a Telugu fitting
 
-Each list item is a separate dictation turn unless stated otherwise. With pasted text, wait briefly after each paste for automatic processing.
+You can say the name in its own turn or begin the measurement turn with it. For example, “Customer peru Ani. భుజం పద్నాలుగున్నర, నడుము ముప్పై.” Use separate turns for the save prompt and confirmation. With pasted text, wait briefly after each paste for automatic processing.
 
 1. Click **New fitting** and say **కస్టమర్ పేరు అనిత**.
 2. Say all five in one turn: **భుజం పద్నాలుగున్నర అంగుళాలు, ఛాతీ ముప్పై ఆరు అంగుళాలు, నడుము ముప్పై అంగుళాలు, చేతి పొడవు తొమ్మిదిన్నర అంగుళాలు, బ్లౌజ్ పొడవు పద్నాలుగు అంగుళాలు**. The card should show 14.5, 36, 30, 9.5, and 14 inches.
