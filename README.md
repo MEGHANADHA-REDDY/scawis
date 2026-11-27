@@ -14,7 +14,7 @@ docker compose up --build -d --wait
 
 Open **[http://localhost:8080](http://localhost:8080)** on the same computer. The home screen starts without any environment variables, API keys, Wispr Flow account, or database. You can paste or type the Telugu demo inputs below to test the whole fitting without installing Wispr Flow.
 
-Choose English, తెలుగు, or हिन्दी at the top of the app to switch its guide, measurement labels, and prompts. The app remembers your choice on that device and keeps the current fitting. For live dictation, install and sign in to Wispr Flow, then select the matching dictation language there. Place the cursor in the dictation field and use Flow's start/stop controls. After Flow inserts the finished transcript, the app processes it automatically. Spoken replies use a voice matching the selected app language when available and show a notice if Telugu playback is unavailable. Hindi can fall back to English. Written replies are always displayed.
+Choose English, తెలుగు, or हिन्दी at the top of the app to switch its guide, measurement labels, and prompts. The app remembers your choice on that device and keeps the current fitting. For live dictation, install and sign in to Wispr Flow, then select the matching dictation language there. Place the cursor in the dictation field and use Flow's start/stop controls. After Flow inserts the finished transcript, the app processes it automatically. The Docker build bundles eSpeak NG to generate Telugu and Hindi replies locally in a browser worker. No installed voice or external speech API is needed. English uses the browser voice. Tap New fitting or Hear reply to enable playback in browsers that require a tap. Use the Docker site or local HTTP preview for the bundled voices. Written replies are always displayed.
 
 ### Open on a phone
 
@@ -35,7 +35,7 @@ For a fitting with conversation in between, say **కొలత రాయి** be
 
 ## Architecture and storage
 
-Docker builds an Nginx image containing the static app. Browser JavaScript parses the transcript and manages the fitting. Wispr Flow supplies speech-to-text. The app uses browser text-to-speech for optional read-back. The fitting records are stored in the browser on the current device and site address. Opening the app on another device or port uses separate browser storage.
+Docker builds an Nginx image containing the static app. Browser JavaScript parses the transcript and manages the fitting. Wispr Flow supplies speech-to-text. The app uses the browser voice for English and eSpeak NG (GPL-3.0-or-later, https://github.com/ianmarmour/espeak-ng.js) for local Telugu and Hindi read-back. The fitting records are stored in the browser on the current device and site address. Opening the app on another device or port uses separate browser storage.
 
 ## Troubleshooting
 

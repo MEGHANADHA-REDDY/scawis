@@ -1,14 +1,17 @@
 import { fields, newFitting, runTurn } from "./fitting.mjs";
 import { fieldText, languages, uiText } from "./language.mjs";
+import { cancelPlayback, primePlayback, speakOffline } from "./playback.mjs";
 
 const key = "bolkar-fit-v1";
 const byId = id => document.getElementById(id);
 const input = byId("transcript");
 const speechEngine = globalThis.speechSynthesis;
+const hasOfflineVoice = Boolean(globalThis.AudioContext && globalThis.Worker && location.protocol !== "file:");
+const canSpeak = Boolean(speechEngine || hasOfflineVoice);
 let autoSubmitTimer;
 let lastReply;
 let storageAvailable = true;
-let state = { active: null, saved: [], sound: Boolean(speechEngine) };
+let state = { active: null, saved: [], sound: canSpeak };
 
 try {
   const saved = JSON.parse(localStorage.getItem(key) ?? "null");
@@ -21,7 +24,7 @@ const t = key => uiText(key, lang);
 const replyText = reply => (lang === "te" ? reply.speech : lang === "hi" ? reply.hindi : reply.text) ?? reply.text;
 
 function showReply(reply) {
-  byId("replay").hidden = !speechEngine || !reply;
+  byId("replay").hidden = !canSpeak || !reply;
   byId("reply").textContent = (reply ? replyText(reply) : t(state.active?.savedAt ? "saved" : state.active ? "draft" : "idle"))
     + (storageAvailable ? "" : " " + t("storageError"));
 }
@@ -37,13 +40,22 @@ function persist() {
 function say(reply) {
   lastReply = reply;
   showReply(reply);
-  if (!state.sound || !speechEngine) return;
-  speechEngine.cancel();
+  if (!state.sound) return;
+  speechEngine?.cancel();
+  const audioError = () => {
+    byId("reply").textContent = replyText(reply) + " " + t("speechError");
+  };
+  if (hasOfflineVoice && lang !== "en") {
+    speakOffline(lang, replyText(reply), audioError);
+    return;
+  }
+  cancelPlayback();
+  if (!speechEngine) return;
   const voices = speechEngine.getVoices();
   const preferred = voices.find(voice => voice.lang.toLowerCase().split(/[-_]/)[0] === lang);
   function speakEnglish() {
-    if (lang === "te") {
-      byId("reply").textContent = replyText(reply) + " " + t("speechError");
+    if (lang !== "en") {
+      audioError();
       return;
     }
     const fallback = new SpeechSynthesisUtterance(reply.text);
@@ -137,13 +149,14 @@ function render() {
   const save = byId("save");
   save.hidden = input.disabled || count !== fields.length || active?.pending?.type === "replace";
   save.textContent = t(active?.pending?.type === "save" ? "confirm" : "save");
-  byId("sound").disabled = !speechEngine;
-  byId("sound").textContent = t(speechEngine ? (state.sound ? "soundOn" : "soundOff") : "soundNone");
-  byId("sound").setAttribute("aria-pressed", String(Boolean(speechEngine && state.sound)));
+  byId("sound").disabled = !canSpeak;
+  byId("sound").textContent = t(canSpeak ? (state.sound ? "soundOn" : "soundOff") : "soundNone");
+  byId("sound").setAttribute("aria-pressed", String(Boolean(canSpeak && state.sound)));
   renderHistory();
 }
 
 byId("new").addEventListener("click", () => {
+  if (hasOfflineVoice) primePlayback();
   if (state.active && !state.active.savedAt) {
     const okay = window.confirm(t("discard"));
     if (!okay) return;
@@ -159,13 +172,18 @@ byId("new").addEventListener("click", () => {
 
 byId("sound").addEventListener("click", () => {
   state.sound = !state.sound;
-  if (!state.sound) speechEngine?.cancel();
+  if (state.sound && hasOfflineVoice) primePlayback();
+  if (!state.sound) {
+    speechEngine?.cancel();
+    cancelPlayback();
+  }
   persist();
   render();
   if (state.sound && lastReply) say(lastReply);
 });
 
 byId("replay").addEventListener("click", () => {
+  if (hasOfflineVoice) primePlayback();
   state.sound = true;
   persist();
   render();
@@ -211,6 +229,8 @@ document.querySelectorAll("[data-lang]").forEach(button => {
     lang = button.dataset.lang;
     state.lang = lang;
     speechEngine?.cancel();
+    cancelPlayback();
+    if (hasOfflineVoice) primePlayback();
     persist();
     render();
     showReply(lastReply);
