@@ -5,6 +5,7 @@ const byId = id => document.getElementById(id);
 const input = byId("transcript");
 const speechEngine = globalThis.speechSynthesis;
 let autoSubmitTimer;
+let lastReply;
 let storageAvailable = true;
 let state = { active: null, saved: [], sound: Boolean(speechEngine) };
 
@@ -24,6 +25,8 @@ function persist() {
 }
 
 function say(reply) {
+  lastReply = reply;
+  byId("replay").hidden = !speechEngine;
   byId("reply").textContent = reply.text + (storageAvailable ? "" : " Device storage is unavailable.");
   if (!state.sound || !speechEngine) return;
   speechEngine.cancel();
@@ -34,7 +37,12 @@ function say(reply) {
     fallback.lang = "en-IN";
     const english = voices.find(voice => /^en-IN$/i.test(voice.lang))
       ?? voices.find(voice => /^en(?:-|_|$)/i.test(voice.lang));
-    if (english) fallback.voice = english;
+    if (english) {
+      fallback.voice = english;
+      fallback.lang = english.lang;
+    } else {
+      fallback.lang = "en-US";
+    }
     fallback.onerror = event => {
       if (event.error !== "canceled" && event.error !== "interrupted") {
         byId("reply").textContent = reply.text + " Spoken reply unavailable on this device.";
@@ -127,6 +135,14 @@ byId("sound").addEventListener("click", () => {
   if (!state.sound) speechEngine?.cancel();
   persist();
   render();
+  if (state.sound && lastReply) say(lastReply);
+});
+
+byId("replay").addEventListener("click", () => {
+  state.sound = true;
+  persist();
+  render();
+  if (lastReply) say(lastReply);
 });
 
 function submitTurn(transcript) {

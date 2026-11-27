@@ -65,6 +65,7 @@ const otherUnits = new Set(["cm", "centimeter", "centimeters", "centimetre", "ce
 const yes = new Set(["haan", "ha", "han", "हां", "हाँ", "yes", "ji haan", "जी हाँ", "जी हां", "haan ji", "han ji", "हाँ जी", "हां जी", "haan save kar do", "हाँ सेव कर दो", "yes save it"]);
 const no = new Set(["nahi", "nahin", "nai", "नहीं", "नही", "no", "cancel", "रद्द"]);
 const finish = new Set(["ho gaya", "hogaya", "हो गया", "done", "finish", "save", "सेव", "save fitting", "save kar do", "सेव कर दो", "ho gaya save kar do", "हो गया सेव कर दो"]);
+const finishAtEnd = /(?:^|[\s,;])(?:అయిపోయింది|పూర్తయింది|పూర్తి అయింది|ayipoyindi)[.!?\s]*$/iu;
 for (const word of ["అవును", "సరే", "సేవ్ చేయండి", "avunu", "sare"]) yes.add(word);
 for (const word of ["కాదు", "వద్దు", "kaadu", "vaddu"]) no.add(word);
 for (const word of ["అయిపోయింది", "పూర్తయింది", "పూర్తి అయింది", "సేవ్", "సేవ్ చేయండి", "ayipoyindi"]) finish.add(word);
@@ -286,6 +287,13 @@ export function runTurn(fitting, transcript) {
   if (!fitting || fitting.savedAt) {
     return note("Start a new fitting first.", "ముందుగా కొత్త ఫిట్టింగ్ మొదలుపెట్టండి.");
   }
+  const end = transcript.match(finishAtEnd);
+  const finishAfterMeasurements = Boolean(end && end.index > 0);
+  if (finishAfterMeasurements) transcript = transcript.slice(0, end.index).trim();
+  // Flow can hear చేతి పొడవు as ఛాతి పొడవు. Disambiguate when bust is separately named.
+  if (/(?:ఛాతి|ఛాతీ|చాతి|చాతీ|బస్ట్)\s+(?!పొడవు)[\p{L}\p{Nd}]/u.test(transcript)) {
+    transcript = transcript.replace(/(?:ఛాతి|ఛాతీ|చాతి|చాతీ)\s+పొడవు/gu, "చేతి పొడవు");
+  }
   const words = tokenize(transcript);
   const command = words.join(" ");
   const pending = fitting.pending;
@@ -299,7 +307,7 @@ export function runTurn(fitting, transcript) {
     fitting.customer = name;
     if (named?.rest) {
       if (pending?.type === "name") fitting.pending = null;
-      const reply = runTurn(fitting, named.rest);
+      const reply = runTurn(fitting, named.rest + (finishAfterMeasurements ? " అయిపోయింది" : ""));
       return note(`Customer: ${name}. ${reply.text}`, `కస్టమర్ పేరు ${name}. ${reply.speech}`);
     }
     if (pending?.type === "name") return requestNext(fitting);
@@ -359,7 +367,10 @@ export function runTurn(fitting, transcript) {
     }
     const queue = pending?.next ?? [];
     fitting.pending = null;
-    return continueQueue(fitting, queue, applyMeasurements(fitting, grouped.values()));
+    const reply = continueQueue(fitting, queue, applyMeasurements(fitting, grouped.values()));
+    if (!finishAfterMeasurements || fitting.pending) return reply;
+    const next = requestNext(fitting);
+    return note(`${reply.text} ${next.text}`, `${reply.speech} ${next.speech}`);
   }
   const reading = readValues(lead);
   if (pending?.type === "value" && reading.values.length) {
