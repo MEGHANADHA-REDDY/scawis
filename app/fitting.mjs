@@ -65,6 +65,7 @@ const otherUnits = new Set(["cm", "centimeter", "centimeters", "centimetre", "ce
 const yes = new Set(["haan", "ha", "han", "हां", "हाँ", "yes", "ji haan", "जी हाँ", "जी हां", "haan ji", "han ji", "हाँ जी", "हां जी", "haan save kar do", "हाँ सेव कर दो", "yes save it"]);
 const no = new Set(["nahi", "nahin", "nai", "नहीं", "नही", "no", "cancel", "रद्द"]);
 const finish = new Set(["ho gaya", "hogaya", "हो गया", "done", "finish", "save", "सेव", "save fitting", "save kar do", "सेव कर दो", "ho gaya save kar do", "हो गया सेव कर दो"]);
+const saveConfirmation = /^(?:save|సేవ్|సేవు)\s+(?:chey+u*|cheyyandi|చెయ్|చేయ్|చెయ్యి|చేయి|చేయు|చెయ్యు|చేయండి|చెయ్యండి)$/iu;
 const finishAtEnd = /(?:^|[\s,;])(?:అయిపోయింది|పూర్తయింది|పూర్తి అయింది|ayipoyindi)[.!?\s]*$/iu;
 for (const word of ["అవును", "సరే", "సేవ్ చేయండి", "avunu", "sare"]) yes.add(word);
 for (const word of ["కాదు", "వద్దు", "kaadu", "vaddu"]) no.add(word);
@@ -314,7 +315,7 @@ export function runTurn(fitting, transcript) {
     return note(`Customer: ${name}`, `కస్టమర్ పేరు ${name}.`);
   }
   if (pending?.type === "save") {
-    if (yes.has(command)) {
+    if (yes.has(command) || saveConfirmation.test(command)) {
       fitting.savedAt = new Date().toISOString();
       fitting.pending = null;
       return note("Fitting saved.", "కొలతలు సేవ్ అయ్యాయి.");

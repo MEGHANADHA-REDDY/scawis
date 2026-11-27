@@ -12,6 +12,15 @@
 <header><div class="wrap masthead"><div><strong>Bolkar Fit</strong><span>Fitting notebook</span></div><button id="sound" type="button" aria-pressed="true">Sound on</button></div></header>
 <main class="wrap">
 <section class="intro"><div><p class="eyebrow">TAILOR'S WORKSHOP</p><h1>Blouse fitting</h1><p>Speak the measurements as you take them.</p></div><button type="button" id="new">New fitting</button></section>
+<details class="panel guide" open>
+<summary><span lang="te">ఎలా వాడాలి?</span> <span class="guide-subtitle">Quick guide</span></summary>
+<ol class="guide-steps">
+<li><strong lang="te">కస్టమర్ పేరు చెప్పండి</strong><p lang="te"><b lang="en">New fitting</b> నొక్కండి. Wispr Flowలో తెలుగు ఎంచుకుని “కస్టమర్ పేరు అనిత” అని చెప్పండి.</p></li>
+<li><strong lang="te">కొలతలు చెప్పండి</strong><p lang="te">“భుజం పదహారు, ఛాతీ ముప్పై ఆరు, నడుము ముప్పై, చేతి పొడవు పది, బ్లౌజ్ పొడవు పదిహేను.”</p><p lang="te">Flow ఆపగానే కొలతలు కార్డులో కనిపిస్తాయి.</p></li>
+<li><strong lang="te">సరిచూసి సేవ్ చేయండి</strong><p lang="te">కొలత మార్చాలంటే దాని పేరు, కొత్త సంఖ్య చెప్పండి. చివర్లో “అయిపోయింది” అనండి. సేవ్ చేయాలా అని అడిగినప్పుడు “అవును” అనండి.</p></li>
+</ol>
+<p class="guide-note">Talking during a fitting? Say <b lang="te">“కొలత రాయి”</b> before each measurement. Use <b>Hear reply</b> to replay a prompt.</p>
+</details>
 <div class="workspace">
 <section class="panel voice" aria-labelledby="voice-title">
 <h2 id="voice-title">Voice entry</h2>
@@ -23,7 +32,6 @@
 </form>
 <button id="save" type="button" hidden>Save fitting</button>
 <div class="reply"><strong>Fitting assistant</strong><p id="reply" role="status" aria-live="polite">Start a fitting to take measurements.</p><button id="replay" type="button" hidden>Hear reply</button></div>
-<div class="examples"><strong>Try saying</strong><p>“కస్టమర్ పేరు అనిత”<br>“కొలత రాయి భుజం పద్నాలుగున్నర”<br>“అయిపోయింది”</p></div>
 </section>
 <section class="panel card" aria-labelledby="card-title">
 <div class="cardhead"><h2 id="card-title">Measurement card</h2><span id="badge">No fitting</span></div>
