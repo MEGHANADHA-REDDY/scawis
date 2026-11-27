@@ -9,38 +9,39 @@
 <script type="module" src="./app.mjs"></script>
 </head>
 <body>
-<header><div class="wrap masthead"><div><strong>Bolkar Fit</strong><span>Fitting notebook</span></div><button id="sound" type="button" aria-pressed="true">Sound on</button></div></header>
+<header><div class="wrap masthead"><div><strong>Bolkar Fit</strong><span data-copy="notebook">Fitting notebook</span></div><button id="sound" type="button" aria-pressed="true">Sound on</button></div></header>
 <main class="wrap">
-<section class="intro"><div><p class="eyebrow">TAILOR'S WORKSHOP</p><h1>Blouse fitting</h1><p>Speak the measurements as you take them.</p></div><button type="button" id="new">New fitting</button></section>
+<div class="language-switch" role="group" aria-label="Language"><span id="language-label"></span><button type="button" data-lang="en" lang="en">English</button><button type="button" data-lang="te" lang="te">తెలుగు</button><button type="button" data-lang="hi" lang="hi">हिन्दी</button></div>
+<section class="intro"><div><h1 data-copy="title">Blouse fitting</h1><p data-copy="intro">Speak the measurements as you take them.</p></div><button type="button" id="new" data-copy="new">New fitting</button></section>
 <details class="panel guide" open>
-<summary><span lang="te">ఎలా వాడాలి?</span> <span class="guide-subtitle">Quick guide</span></summary>
+<summary data-copy="guide">How to use</summary>
 <ol class="guide-steps">
-<li><strong lang="te">కస్టమర్ పేరు చెప్పండి</strong><p lang="te"><b lang="en">New fitting</b> నొక్కండి. Wispr Flowలో తెలుగు ఎంచుకుని “కస్టమర్ పేరు అనిత” అని చెప్పండి.</p></li>
-<li><strong lang="te">కొలతలు చెప్పండి</strong><p lang="te">“భుజం పదహారు, ఛాతీ ముప్పై ఆరు, నడుము ముప్పై, చేతి పొడవు పది, బ్లౌజ్ పొడవు పదిహేను.”</p><p lang="te">Flow ఆపగానే కొలతలు కార్డులో కనిపిస్తాయి.</p></li>
-<li><strong lang="te">సరిచూసి సేవ్ చేయండి</strong><p lang="te">కొలత మార్చాలంటే దాని పేరు, కొత్త సంఖ్య చెప్పండి. చివర్లో “అయిపోయింది” అనండి. సేవ్ చేయాలా అని అడిగినప్పుడు “అవును” అనండి.</p></li>
+<li><strong data-copy="stepName"></strong><p data-copy="nameHelp"></p></li>
+<li><strong data-copy="stepValues"></strong><p data-copy="sample"></p><p data-copy="stopHelp"></p></li>
+<li><strong data-copy="stepSave"></strong><p data-copy="saveHelp"></p></li>
 </ol>
-<p class="guide-note">Talking during a fitting? Say <b lang="te">“కొలత రాయి”</b> before each measurement. Use <b>Hear reply</b> to replay a prompt.</p>
+<p class="guide-note" data-copy="guideNote"></p>
 </details>
 <div class="workspace">
 <section class="panel voice" aria-labelledby="voice-title">
-<h2 id="voice-title">Voice entry</h2>
-<p>Start Wispr Flow with this field focused. Your dictation is processed automatically.</p>
+<h2 id="voice-title" data-copy="voice">Voice entry</h2>
+<p data-copy="voiceHelp">Start Wispr Flow with this field focused. Your dictation is processed automatically.</p>
 <form id="form">
-<label for="transcript">Dictation</label>
+<label for="transcript" data-copy="dictation">Dictation</label>
 <input id="transcript" type="text" autocomplete="off" placeholder="భుజం పద్నాలుగున్నర, నడుము ముప్పై">
-<button id="process" class="primary">Process dictation</button>
+<button id="process" data-copy="process" class="primary">Process dictation</button>
 </form>
 <button id="save" type="button" hidden>Save fitting</button>
-<div class="reply"><strong>Fitting assistant</strong><p id="reply" role="status" aria-live="polite">Start a fitting to take measurements.</p><button id="replay" type="button" hidden>Hear reply</button></div>
+<div class="reply"><strong data-copy="assistant">Fitting assistant</strong><p id="reply" role="status" aria-live="polite">Start a fitting to take measurements.</p><button id="replay" data-copy="replay" type="button" hidden>Hear reply</button></div>
 </section>
 <section class="panel card" aria-labelledby="card-title">
-<div class="cardhead"><h2 id="card-title">Measurement card</h2><span id="badge">No fitting</span></div>
-<p id="customer" lang="te"></p><p id="progress">0 of 5 measurements</p>
+<div class="cardhead"><h2 id="card-title" data-copy="card">Measurement card</h2><span id="badge">No fitting</span></div>
+<p id="customer"></p><p id="progress">0 of 5 measurements</p>
 <progress id="meter" max="5" value="0" aria-label="Measurements recorded"></progress>
 <dl id="measurements"></dl>
 </section>
 </div>
-<section class="panel history" aria-labelledby="history-title"><h2 id="history-title">Saved fittings</h2><div id="history"></div></section>
+<section class="panel history" aria-labelledby="history-title"><h2 id="history-title" data-copy="history">Saved fittings</h2><div id="history"></div></section>
 </main>
 </body>
 </html>

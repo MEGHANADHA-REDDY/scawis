@@ -16,6 +16,8 @@ const teluguFields = [
 ];
 fields.forEach((field, index) => {
   field.speech = teluguFields[index][0];
+  field.hindi = ["कंधा", "छाती", "कमर", "बाजू की लंबाई", "ब्लाउज़ की लंबाई"][index];
+  field.aliases.push(field.hindi);
   field.aliases.push(...teluguFields[index]);
 });
 const teluguNumbers = "ఒకటి రెండు మూడు నాలుగు ఐదు ఆరు ఏడు ఎనిమిది తొమ్మిది పది పదకొండు పన్నెండు పదమూడు పద్నాలుగు పదిహేను పదహారు పదిహేడు పద్దెనిమిది పంతొమ్మిది ఇరవై ఇరవైఒకటి ఇరవైరెండు ఇరవైమూడు ఇరవైనాలుగు ఇరవైఐదు ఇరవైఆరు ఇరవైఏడు ఇరవైఎనిమిది ఇరవైతొమ్మిది ముప్పై ముప్పైఒకటి ముప్పైరెండు ముప్పైమూడు ముప్పైనాలుగు ముప్పైఐదు ముప్పైఆరు ముప్పైఏడు ముప్పైఎనిమిది ముప్పైతొమ్మిది నలభై నలభైఒకటి నలభైరెండు నలభైమూడు నలభైనాలుగు నలభైఐదు నలభైఆరు నలభైఏడు నలభైఎనిమిది నలభైతొమ్మిది యాభై".split(" ");
@@ -66,7 +68,7 @@ const yes = new Set(["haan", "ha", "han", "हां", "हाँ", "yes", "ji h
 const no = new Set(["nahi", "nahin", "nai", "नहीं", "नही", "no", "cancel", "रद्द"]);
 const finish = new Set(["ho gaya", "hogaya", "हो गया", "done", "finish", "save", "सेव", "save fitting", "save kar do", "सेव कर दो", "ho gaya save kar do", "हो गया सेव कर दो"]);
 const saveConfirmation = /^(?:save|సేవ్|సేవు)\s+(?:chey+u*|cheyyandi|చెయ్|చేయ్|చెయ్యి|చేయి|చేయు|చెయ్యు|చేయండి|చెయ్యండి)$/iu;
-const finishAtEnd = /(?:^|[\s,;])(?:అయిపోయింది|పూర్తయింది|పూర్తి అయింది|ayipoyindi)[.!?\s]*$/iu;
+const finishAtEnd = /(?:^|[\s,;])(?:అయిపోయింది|పూర్తయింది|పూర్తి అయింది|ayipoyindi|हो गया|ho gaya|done)[.!?।\s]*$/iu;
 for (const word of ["అవును", "సరే", "సేవ్ చేయండి", "avunu", "sare"]) yes.add(word);
 for (const word of ["కాదు", "వద్దు", "kaadu", "vaddu"]) no.add(word);
 for (const word of ["అయిపోయింది", "పూర్తయింది", "పూర్తి అయింది", "సేవ్", "సేవ్ చేయండి", "ayipoyindi"]) finish.add(word);
@@ -174,8 +176,8 @@ export function newFitting() {
   };
 }
 
-function note(text, speech = text) {
-  return { text, speech };
+function note(text, speech = text, hindi = text) {
+  return { text, speech, hindi };
 }
 
 function requestNext(fitting) {
@@ -183,31 +185,34 @@ function requestNext(fitting) {
   if (missing.length) {
     return note(
       `Still needed: ${missing.map(field => field.label).join(", ")}.`,
-      `ఇంకా చెప్పాల్సిన కొలతలు: ${missing.map(field => field.speech).join(", ")}.`
+      `ఇంకా చెప్పాల్సిన కొలతలు: ${missing.map(field => field.speech).join(", ")}.`,
+      `बाकी नाप: ${missing.map(field => field.hindi).join(", ")}।`
     );
   }
   if (!fitting.customer) {
     fitting.pending = { type: "name" };
-    return note("Say the customer's name before saving.", "సేవ్ చేయడానికి కస్టమర్ పేరు చెప్పండి.");
+    return note("Say the customer's name before saving.", "సేవ్ చేయడానికి కస్టమర్ పేరు చెప్పండి.", "सेव करने से पहले ग्राहक का नाम बोलें।");
   }
   fitting.pending = { type: "save" };
-  return note(`Save all five measurements for ${fitting.customer}?`, `${fitting.customer} కొలతలు సేవ్ చేయాలా?`);
+  return note(`Save all five measurements for ${fitting.customer}?`, `${fitting.customer} కొలతలు సేవ్ చేయాలా?`, `${fitting.customer} के नाप सेव करें?`);
 }
 
 function askAboutValues(field, values, wrongUnit) {
-  if (wrongUnit) return note(`How many inches for ${field.label.toLowerCase()}?`, askValue(field));
+  if (wrongUnit) return note(`How many inches for ${field.label.toLowerCase()}?`, askValue(field), `${field.hindi} कितने इंच?`);
   if (values.length > 1) {
     return note(
       `${field.label}: which value, ${values.join(" or ")} inches?`,
-      `${field.speech}: ${values.join(" లేదా ")} అంగుళాలా?`
+      `${field.speech}: ${values.join(" లేదా ")} అంగుళాలా?`,
+      `${field.hindi}: ${values.join(" या ")} इंच?`
     );
   }
-  return note(`Please repeat the ${field.label.toLowerCase()} measurement in inches.`, `${field.speech} కొలత అంగుళాల్లో మళ్ళీ చెప్పండి.`);
+  return note(`Please repeat the ${field.label.toLowerCase()} measurement in inches.`, `${field.speech} కొలత అంగుళాల్లో మళ్ళీ చెప్పండి.`, `${field.hindi} का नाप इंच में फिर से बोलें।`);
 }
 
 function applyMeasurements(fitting, entries) {
   const lines = [];
   const spoken = [];
+  const hindi = [];
   const followups = [];
   for (const { field, values, wrongUnit } of entries) {
     if (values.length !== 1 || wrongUnit || values[0] <= 0 || values[0] > 100) {
@@ -227,7 +232,8 @@ function applyMeasurements(fitting, entries) {
         value,
         reply: note(
           `Change ${field.label.toLowerCase()} from ${previous} to ${value} inches?`,
-          `${field.speech} ${previous} నుంచి ${value} అంగుళాలకు మార్చాలా?`
+          `${field.speech} ${previous} నుంచి ${value} అంగుళాలకు మార్చాలా?`,
+          `${field.hindi} ${previous} से ${value} इंच कर दें?`
         )
       });
       continue;
@@ -235,6 +241,7 @@ function applyMeasurements(fitting, entries) {
     fitting.values[field.id] = value;
     lines.push(`${field.label} ${value} in.`);
     spoken.push(`${field.speech} ${value} అంగుళాలు.`);
+    hindi.push(`${field.hindi} ${value} इंच।`);
   }
   fitting.pending = followups.shift() ?? null;
   if (fitting.pending) {
@@ -242,13 +249,14 @@ function applyMeasurements(fitting, entries) {
     fitting.pending.next = followups;
     lines.push(reply.text);
     spoken.push(reply.speech);
+    hindi.push(reply.hindi ?? reply.text);
   }
-  return note(lines.join(" "), spoken.join(" "));
+  return note(lines.join(" "), spoken.join(" "), hindi.join(" "));
 }
 
 function combine(reply, pending) {
   if (!pending?.reply) return reply;
-  return note(`${reply.text} ${pending.reply.text}`, `${reply.speech} ${pending.reply.speech}`);
+  return note(`${reply.text} ${pending.reply.text}`, `${reply.speech} ${pending.reply.speech}`, `${reply.hindi} ${pending.reply.hindi ?? pending.reply.text}`);
 }
 
 function continueQueue(fitting, next, reply) {
@@ -260,14 +268,14 @@ function continueQueue(fitting, next, reply) {
   return combine(reply, fitting.pending);
 }
 
-const namePrefix = /^(?:(?:కస్టమర్|customer|kastamar)\s+)?(?:పేరు|name|peru|peeru)(?:\s*[:：,]\s*|\s+)(?:(?:is|అంటే)\s+)?/iu;
-const markerPattern = "కొలత రాయండి|కొలత రాయి|note karo|kolata rayi";
+const namePrefix = /^(?:(?:కస్టమర్|customer|kastamar|ग्राहक|कस्टमर)(?:\s+का)?\s+)?(?:పేరు|name|peru|peeru|नाम)(?:\s*[:：,]\s*|\s+)(?:(?:is|అంటే)\s+)?/iu;
+const markerPattern = "కొలత రాయండి|కొలత రాయి|note karo|kolata rayi|note this|नोट करो";
 
 function readCustomer(transcript) {
   const prefix = transcript.match(namePrefix);
   if (!prefix) return null;
   const content = transcript.slice(prefix[0].length);
-  const punctuation = content.search(/[.!?。\n](?!\p{Nd})/u);
+  const punctuation = content.search(/[.!?।。\n](?!\p{Nd})/u);
   const marker = content.search(new RegExp(markerPattern, "iu"));
   const tokens = [...content.matchAll(/[\p{L}\p{M}]+/gu)];
   const measurement = tokens.findIndex((_, index) => index > 0 && aliases.some(alias =>
@@ -280,13 +288,13 @@ function readCustomer(transcript) {
   );
   return {
     name: content.slice(0, splitAt).trim().replace(/[,:;]+$/u, "").trim(),
-    rest: content.slice(splitAt).replace(/^[\s,.!?。;:]+/u, "")
+    rest: content.slice(splitAt).replace(/^[\s,.!?।。;:]+/u, "")
   };
 }
 
 export function runTurn(fitting, transcript) {
   if (!fitting || fitting.savedAt) {
-    return note("Start a new fitting first.", "ముందుగా కొత్త ఫిట్టింగ్ మొదలుపెట్టండి.");
+    return note("Start a new fitting first.", "ముందుగా కొత్త ఫిట్టింగ్ మొదలుపెట్టండి.", "पहले नई फिटिंग शुरू करें।");
   }
   const end = transcript.match(finishAtEnd);
   const finishAfterMeasurements = Boolean(end && end.index > 0);
@@ -300,29 +308,29 @@ export function runTurn(fitting, transcript) {
   const pending = fitting.pending;
   const named = readCustomer(transcript.trim());
   if (named || (pending?.type === "name" && !finish.has(command))) {
-    const name = (named?.name ?? transcript).trim().replace(/[.!?]+$/u, "");
+    const name = (named?.name ?? transcript).trim().replace(/[.!?।]+$/u, "");
     if (!/^[\p{L}\p{M}][\p{L}\p{M}\s.'’-]{0,59}$/u.test(name) ||
         yes.has(command) || no.has(command) || splitMeasurements(tokenize(name)).chunks.length) {
-      return note("Please say just the customer's name.", "కస్టమర్ పేరు మాత్రమే చెప్పండి.");
+      return note("Please say just the customer's name.", "కస్టమర్ పేరు మాత్రమే చెప్పండి.", "केवल ग्राहक का नाम बोलें।");
     }
     fitting.customer = name;
     if (named?.rest) {
       if (pending?.type === "name") fitting.pending = null;
       const reply = runTurn(fitting, named.rest + (finishAfterMeasurements ? " అయిపోయింది" : ""));
-      return note(`Customer: ${name}. ${reply.text}`, `కస్టమర్ పేరు ${name}. ${reply.speech}`);
+      return note(`Customer: ${name}. ${reply.text}`, `కస్టమర్ పేరు ${name}. ${reply.speech}`, `ग्राहक का नाम ${name}। ${reply.hindi}`);
     }
     if (pending?.type === "name") return requestNext(fitting);
-    return note(`Customer: ${name}`, `కస్టమర్ పేరు ${name}.`);
+    return note(`Customer: ${name}`, `కస్టమర్ పేరు ${name}.`, `ग्राहक का नाम ${name}।`);
   }
   if (pending?.type === "save") {
     if (yes.has(command) || saveConfirmation.test(command)) {
       fitting.savedAt = new Date().toISOString();
       fitting.pending = null;
-      return note("Fitting saved.", "కొలతలు సేవ్ అయ్యాయి.");
+      return note("Fitting saved.", "కొలతలు సేవ్ అయ్యాయి.", "नाप सेव हो गए।");
     }
     if (no.has(command)) {
       fitting.pending = null;
-      return note("Draft kept. Continue when ready.", "కొలతలు అలాగే ఉంచాను.");
+      return note("Draft kept. Continue when ready.", "కొలతలు అలాగే ఉంచాను.", "ड्राफ़्ट सुरक्षित है।" );
     }
   }
   if (pending?.type === "replace") {
@@ -332,14 +340,16 @@ export function runTurn(fitting, transcript) {
       fitting.pending = null;
       return continueQueue(fitting, pending.next ?? [], note(
         `${field.label} updated to ${pending.value} in.`,
-        `${field.speech} ఇప్పుడు ${pending.value} అంగుళాలు.`
+        `${field.speech} ఇప్పుడు ${pending.value} అంగుళాలు.`,
+        `${field.hindi} अब ${pending.value} इंच है।`
       ));
     }
     if (no.has(command)) {
       fitting.pending = null;
       return continueQueue(fitting, pending.next ?? [], note(
         "Previous measurement kept. Say the measurement again to make a different change.",
-        "పాత కొలత అలాగే ఉంచాను. మార్చాలంటే మళ్ళీ చెప్పండి."
+        "పాత కొలత అలాగే ఉంచాను. మార్చాలంటే మళ్ళీ చెప్పండి.",
+        "पुराना नाप रखा है। बदलने के लिए फिर से बोलें।"
       ));
     }
     return pending.reply;
@@ -371,7 +381,7 @@ export function runTurn(fitting, transcript) {
     const reply = continueQueue(fitting, queue, applyMeasurements(fitting, grouped.values()));
     if (!finishAfterMeasurements || fitting.pending) return reply;
     const next = requestNext(fitting);
-    return note(`${reply.text} ${next.text}`, `${reply.speech} ${next.speech}`);
+    return note(`${reply.text} ${next.text}`, `${reply.speech} ${next.speech}`, `${reply.hindi} ${next.hindi}`);
   }
   const reading = readValues(lead);
   if (pending?.type === "value" && reading.values.length) {
@@ -381,9 +391,9 @@ export function runTurn(fitting, transcript) {
     ]));
   }
   if (reading.values.length) {
-    return note("Which measurement is that? Say its name and the number.", "ఏ కొలత? కొలత పేరు, సంఖ్య చెప్పండి.");
+    return note("Which measurement is that? Say its name and the number.", "ఏ కొలత? కొలత పేరు, సంఖ్య చెప్పండి.", "कौन सा नाप? उसका नाम और नंबर बोलें।");
   }
   if (pending?.type === "save") return requestNext(fitting);
   if (pending?.reply) return pending.reply;
-  return note("Please repeat the measurement name and number.", "కొలత పేరు, సంఖ్య మళ్ళీ చెప్పండి.");
+  return note("Please repeat the measurement name and number.", "కొలత పేరు, సంఖ్య మళ్ళీ చెప్పండి.", "नाप का नाम और नंबर फिर से बोलें।");
 }
